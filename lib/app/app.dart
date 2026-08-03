@@ -10,13 +10,7 @@ class KonnectAIApp extends StatefulWidget {
 }
 
 class _KonnectAIAppState extends State<KonnectAIApp> {
-  ThemeMode _themeMode = ThemeMode.light;
-
-  void _toggleTheme() {
-    setState(() {
-      _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
-    });
-  }
+  final ThemeMode _themeMode = ThemeMode.system;
 
   @override
   Widget build(BuildContext context) {

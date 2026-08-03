@@ -16,4 +16,17 @@ class AppColors {
   static const textPlaceholder = Color(0xFFA1A1AA);
   static const error = Color(0xFFDC2626);
   static const success = Color(0xFF16A34A);
+
+  // Dark-mode counterparts. Kept alongside the light palette (rather than
+  // scattered as inline hex literals) so every screen resolves colors the
+  // same way and light/dark stay in sync as the palette evolves.
+  static const darkSurface = Color(0xFF0F172A);
+  static const darkCard = Color(0xFF111827);
+  static const darkField = Color(0xFF1E293B);
+  static const darkOutline = Color(0xFF334155);
+  static const darkTextPrimary = Colors.white;
+  static const darkTextSecondary = Color(0xFFE2E8F0);
+  static const darkTextMuted = Color(0xFFCBD5E1);
+  static const darkTextPlaceholder = Color(0xFF94A3B8);
+  static const darkErrorSurface = Color(0xFF7F1D1D);
 }
