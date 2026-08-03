@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:konnectai/app/router/app_routes.dart';
 import 'package:konnectai/core/supabase/supabase_client.dart';
@@ -52,23 +51,14 @@ class _SplashPageState extends State<SplashPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SvgPicture.asset(
-              'assets/icons/app_icon.svg',
-              width: 120,
-              height: 120,
-              fit: BoxFit.cover,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'KonnectAI',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text('Preparing your experience...'),
-          ],
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(32),
+          child: Image.asset(
+            'assets/images/icons.png',
+            width: 180,
+            height: 180,
+            fit: BoxFit.contain,
+          ),
         ),
       ),
     );
