@@ -68,23 +68,6 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
 
-              // Recent Chats Section
-              SliverToBoxAdapter(
-                child: _SectionHeader(title: 'Recent Chats'),
-              ),
-              SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 140,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: 5,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
-                    itemBuilder: (context, index) => _RecentChatCard(index: index),
-                  ),
-                ),
-              ),
-
               // Trending Characters Section
               SliverToBoxAdapter(
                 child: _SectionHeader(
@@ -224,56 +207,6 @@ class _SectionHeader extends StatelessWidget {
               onPressed: onAction,
               child: Text(actionLabel!, style: TextStyle(color: colors.primary)),
             ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RecentChatCard extends StatelessWidget {
-  const _RecentChatCard({required this.index});
-
-  final int index;
-  static const _names = ['Aria', 'Kaito', 'Nova', 'Zephyr', 'Lyra'];
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    return SizedBox(
-      width: 100,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: colors.primary.withOpacity(0.1),
-              border: Border.all(color: colors.outline, width: 1),
-            ),
-            child: Center(
-              child: Icon(Icons.smart_toy_rounded, size: 32, color: colors.primary),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _names[index],
-            style: TextStyle(
-              color: colors.textPrimary,
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            '2h ago',
-            style: TextStyle(color: colors.textMuted, fontSize: 11),
-            textAlign: TextAlign.center,
-          ),
         ],
       ),
     );

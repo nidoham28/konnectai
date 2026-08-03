@@ -2,7 +2,8 @@ import 'package:go_router/go_router.dart';
 import 'package:konnectai/app/router/app_routes.dart';
 import 'package:konnectai/features/about/presentation/pages/about_page.dart';
 import 'package:konnectai/features/auth/presentation/pages/auth_page.dart';
-import 'package:konnectai/features/home/presentation/pages/home_page.dart';
+import 'package:konnectai/features/chats/presentation/pages/chats_page.dart';
+import 'package:konnectai/features/main/presentation/pages/main_navigation_page.dart';
 import 'package:konnectai/features/splash/presentation/pages/splash_page.dart';
 
 class AppRouter {
@@ -24,7 +25,17 @@ class AppRouter {
       GoRoute(
         path: AppPaths.home,
         name: AppRouteNames.home,
-        builder: (context, state) => const HomePage(),
+        builder: (context, state) => const MainNavigationPage(initialIndex: 0),
+      ),
+      GoRoute(
+        path: AppPaths.chats,
+        name: AppRouteNames.chats,
+        builder: (context, state) => const MainNavigationPage(initialIndex: 1),
+      ),
+      GoRoute(
+        path: AppPaths.library,
+        name: AppRouteNames.library,
+        builder: (context, state) => const MainNavigationPage(initialIndex: 2),
       ),
       GoRoute(
         path: AppPaths.about,
