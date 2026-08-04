@@ -3,8 +3,7 @@ class AppPaths {
   static const auth = '/auth';
   static const home = '/home';
   static const chats = '/chats';
-  static const library = '/library';
-  static const about = '/about';
+  static const profile = '/profile';
 }
 
 class AppRouteNames {
@@ -12,6 +11,5 @@ class AppRouteNames {
   static const auth = 'auth';
   static const home = 'home';
   static const chats = 'chats';
-  static const library = 'library';
-  static const about = 'about';
+  static const profile = 'profile';
 }

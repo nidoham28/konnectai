@@ -1,10 +1,41 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:konnectai/app/router/app_routes.dart';
 import 'package:konnectai/core/theme/app_themes.dart';
 
+/// Minimal data needed to render a trending character card.
+/// Feed this from your character/feed repository — no fake data here.
+class CharacterSummary {
+  const CharacterSummary({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.chatCountLabel,
+    this.avatarUrl,
+  });
+
+  final String id;
+  final String name;
+  final String description;
+  final String chatCountLabel;
+  final String? avatarUrl;
+}
+
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({
+    super.key,
+    this.trendingCharacters = const [],
+    this.onRefresh,
+    this.onCharacterTap,
+    this.onCreateTap,
+    this.onSeeAllTrending,
+    this.onSearchChanged,
+  });
+
+  final List<CharacterSummary> trendingCharacters;
+  final Future<void> Function()? onRefresh;
+  final ValueChanged<CharacterSummary>? onCharacterTap;
+  final VoidCallback? onCreateTap;
+  final VoidCallback? onSeeAllTrending;
+  final ValueChanged<String>? onSearchChanged;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -14,18 +45,16 @@ class _HomePageState extends State<HomePage> {
   static const _categories = ['For You', 'Assistants', 'Anime', 'Games', 'Humor', 'Debate'];
   int _selectedCategory = 0;
 
-  Future<void> _onRefresh() async {
-    // TODO: hook up to real data source (character feed / recent chats).
-    await Future.delayed(const Duration(milliseconds: 700));
+  Future<void> _handleRefresh() async {
+    await widget.onRefresh?.call();
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final width = MediaQuery.sizeOf(context).width;
-    // Widen the trending grid to 3 columns on tablets/desktop instead of
-    // hardcoding 2 — keeps card aspect ratio sane at every breakpoint.
     final crossAxisCount = width >= 900 ? 4 : (width >= 600 ? 3 : 2);
+    final characters = widget.trendingCharacters;
 
     return Scaffold(
       backgroundColor: colors.surface,
@@ -33,19 +62,16 @@ class _HomePageState extends State<HomePage> {
         bottom: false,
         child: RefreshIndicator(
           color: colors.primary,
-          onRefresh: _onRefresh,
+          onRefresh: _handleRefresh,
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
             slivers: [
-              // Search Bar
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _SearchField(colors: colors),
+                  child: _SearchField(colors: colors, onChanged: widget.onSearchChanged),
                 ),
               ),
-
-              // Categories
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 24),
@@ -67,30 +93,43 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-
-              // Trending Characters Section
               SliverToBoxAdapter(
                 child: _SectionHeader(
                   title: 'Trending Characters',
-                  actionLabel: 'See all',
-                  onAction: () {},
+                  actionLabel: characters.isEmpty ? null : 'See all',
+                  onAction: widget.onSeeAllTrending,
                 ),
               ),
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                sliver: SliverGrid(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 0.72,
+              if (characters.isEmpty)
+                SliverToBoxAdapter(
+                  child: _EmptyState(
+                    icon: Icons.auto_awesome_outlined,
+                    title: 'No trending characters yet',
+                    message: 'Check back soon, or create your own character to get started.',
                   ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => _CharacterCard(index: index),
-                    childCount: 4,
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                  sliver: SliverGrid(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 0.72,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final character = characters[index];
+                        return _CharacterCard(
+                          character: character,
+                          onTap: () => widget.onCharacterTap?.call(character),
+                        );
+                      },
+                      childCount: characters.length,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),
@@ -101,9 +140,7 @@ class _HomePageState extends State<HomePage> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(colors.radiusButton),
         ),
-        onPressed: () {
-          // Navigate to create character or new chat
-        },
+        onPressed: widget.onCreateTap,
         child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
       ),
     );
@@ -111,9 +148,10 @@ class _HomePageState extends State<HomePage> {
 }
 
 class _SearchField extends StatelessWidget {
-  const _SearchField({required this.colors});
+  const _SearchField({required this.colors, this.onChanged});
 
   final AppColorScheme colors;
+  final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -125,6 +163,7 @@ class _SearchField extends StatelessWidget {
         border: Border.all(color: colors.outline),
       ),
       child: TextField(
+        onChanged: onChanged,
         style: TextStyle(color: colors.textPrimary),
         decoration: InputDecoration(
           hintText: 'Search characters, creators, or tags...',
@@ -161,9 +200,7 @@ class _CategoryChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected ? colors.primary : colors.field,
           borderRadius: BorderRadius.circular(colors.radiusChip),
-          border: Border.all(
-            color: isSelected ? colors.primary : colors.outline,
-          ),
+          border: Border.all(color: isSelected ? colors.primary : colors.outline),
         ),
         alignment: Alignment.center,
         child: Text(
@@ -196,11 +233,7 @@ class _SectionHeader extends StatelessWidget {
         children: [
           Text(
             title,
-            style: TextStyle(
-              color: colors.textPrimary,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(color: colors.textPrimary, fontSize: 18, fontWeight: FontWeight.w600),
           ),
           if (actionLabel != null)
             TextButton(
@@ -214,12 +247,10 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _CharacterCard extends StatelessWidget {
-  const _CharacterCard({required this.index});
+  const _CharacterCard({required this.character, this.onTap});
 
-  final int index;
-  static const _names = ['Aria', 'Kaito', 'Nova', 'Zephyr'];
-  static const _descriptions = ['Helpful Assistant', 'Cyberpunk Hacker', 'Space Explorer', 'Witty Bard'];
-  static const _chats = ['1.2M chats', '850K chats', '2.5M chats', '430K chats'];
+  final CharacterSummary character;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -228,9 +259,7 @@ class _CharacterCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(colors.radiusCard),
-        onTap: () {
-          // Navigate to character detail / chat
-        },
+        onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
             color: colors.card,
@@ -246,9 +275,9 @@ class _CharacterCard extends StatelessWidget {
                 child: Container(
                   width: double.infinity,
                   color: colors.primary.withOpacity(0.08),
-                  child: Center(
-                    child: Icon(Icons.smart_toy_rounded, size: 48, color: colors.primary),
-                  ),
+                  child: character.avatarUrl != null
+                      ? Image.network(character.avatarUrl!, fit: BoxFit.cover)
+                      : Center(child: Icon(Icons.smart_toy_rounded, size: 48, color: colors.primary)),
                 ),
               ),
               Expanded(
@@ -260,18 +289,14 @@ class _CharacterCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        _names[index],
-                        style: TextStyle(
-                          color: colors.textPrimary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                        character.name,
+                        style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold, fontSize: 16),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        _descriptions[index],
+                        character.description,
                         style: TextStyle(color: colors.textMuted, fontSize: 12),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -289,12 +314,8 @@ class _CharacterCard extends StatelessWidget {
                             Icon(Icons.chat_bubble_outline, size: 10, color: colors.textMuted),
                             const SizedBox(width: 4),
                             Text(
-                              _chats[index],
-                              style: TextStyle(
-                                color: colors.textMuted,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w500,
-                              ),
+                              character.chatCountLabel,
+                              style: TextStyle(color: colors.textMuted, fontSize: 10, fontWeight: FontWeight.w500),
                             ),
                           ],
                         ),
@@ -306,6 +327,35 @@ class _CharacterCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.icon, required this.title, required this.message});
+
+  final IconData icon;
+  final String title;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 32, 24, 64),
+      child: Column(
+        children: [
+          Icon(icon, size: 40, color: colors.textMuted),
+          const SizedBox(height: 12),
+          Text(title, style: TextStyle(color: colors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 6),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: colors.textSecondary, fontSize: 13, height: 1.4),
+          ),
+        ],
       ),
     );
   }
