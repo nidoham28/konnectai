@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:konnectai/core/theme/app_themes.dart';
 
@@ -133,15 +135,6 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: colors.primary,
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(colors.radiusButton),
-        ),
-        onPressed: widget.onCreateTap,
-        child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
       ),
     );
   }
